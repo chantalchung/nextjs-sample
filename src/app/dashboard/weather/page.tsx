@@ -1,6 +1,6 @@
 'use client';
 
-import { WEATHER_API_URL } from '@/src/app/lib/api';
+import { WEATHER_API_URL, WeatherResponse } from '@/src/app/lib/api';
 import { CardSkeleton } from '@/src/app/ui/skeletons';
 // import { Metadata } from 'next';
 import { Suspense, useEffect, useState } from 'react';
@@ -9,6 +9,9 @@ import { lusitana } from '@/src/app/ui/fonts';
 import Button from '@/src/app/ui/components/Button';
 import { MdMyLocation, MdOutlineLocationOn } from 'react-icons/md';
 import Search from '@/src/app/ui/components/Search';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 // export const metadata: Metadata = {
 //   title: 'Weather',
@@ -17,16 +20,28 @@ import Search from '@/src/app/ui/components/Search';
 const WEATHER_API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
 export default function Page() {
-  const [data, setData] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
   const [isLoading, setLoading] = useState(true);
+
+  const { isPending, error, data } = useQuery<WeatherResponse>({
+    queryKey: ['repoData'],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        `${WEATHER_API_URL}/forecast?q=vancouver&units=metric&appid=${WEATHER_API_KEY}`,
+      );
+      return data;
+    },
+  });
+
+  console.log(data);
 
   useEffect(() => {
     fetch(
-      `${WEATHER_API_URL}/weather?lat=${49}&lon=${123}&units=metric&appid=${WEATHER_API_KEY}`,
+      `${WEATHER_API_URL}/forecast?q=vancouver&units=metric&appid=${WEATHER_API_KEY}`,
     )
       .then((res) => res.json())
       .then((data) => {
-        setData(data);
+        setWeatherData(data);
         setLoading(false);
       });
   }, []);
@@ -43,11 +58,24 @@ export default function Page() {
       <div className="mb-4 mt-4 flex items-center justify-between gap-2 md:mt-8">
         <Search placeholder="Search location..." />
         <Button>
-          <MdMyLocation />
+          <MagnifyingGlassIcon className="h-4 w-4" />
         </Button>
+        <div className="px-2">
+          <MdMyLocation />
+        </div>
       </div>
       <Suspense fallback={<CardSkeleton />}>
-        <Card title="Weather" value={JSON.stringify(data)} type="weather" />
+        <Card
+          title="Weather"
+          value={JSON.stringify(weatherData)}
+          type="weather"
+        />
+        <main className="mx-auto flex w-full max-w-7xl flex-col gap-9 px-3 pb-10 pt-4">
+          {/* today */}
+          <section></section>
+          {/* week forecast */}
+          <section></section>
+        </main>
       </Suspense>
     </div>
   );
