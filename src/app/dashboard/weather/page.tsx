@@ -1,7 +1,7 @@
 'use client';
 
 import { WEATHER_API_URL, WeatherResponse } from '@/src/app/lib/api';
-import { CardSkeleton } from '@/src/app/ui/skeletons';
+import DashboardSkeleton, { CardSkeleton } from '@/src/app/ui/skeletons';
 // import { Metadata } from 'next';
 import { Suspense, useEffect, useState } from 'react';
 import Card from '@/src/app/ui/components/Card';
@@ -13,6 +13,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
+import Container from '@/src/app/ui/components/Container';
 
 // export const metadata: Metadata = {
 //   title: 'Weather',
@@ -48,6 +49,10 @@ export default function Page() {
       });
   }, []);
 
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
@@ -80,10 +85,24 @@ export default function Page() {
                 <p>{format(parseISO(firstData?.dt_txt ?? ''), 'EEEE')}</p>
                 <p>
                   {' '}
-                  {format(parseISO(firstData?.dt_txt ?? ''), 'MM.dd.yyyy')}
+                  {`(${format(
+                    parseISO(firstData?.dt_txt ?? ''),
+                    'MM.dd.yyyy',
+                  )})`}
                 </p>
               </h2>
-              <div></div>
+              <Container className="items-center gap-10 px-6">
+                <div className="flex flex-col px-4">
+                  <span className="text-5xl">{firstData?.main.temp}°</span>
+                  <p className="space-x-1 whitespace-nowrap text-xs">
+                    <span>Feels like {firstData?.main.feels_like}°</span>
+                  </p>
+                  <p className="space-x-1 whitespace-nowrap text-xs">
+                    <span>{firstData?.main.temp_min}</span>
+                    <span>{firstData?.main.temp_max}</span>
+                  </p>
+                </div>
+              </Container>
             </div>
           </section>
           {/* week forecast */}
