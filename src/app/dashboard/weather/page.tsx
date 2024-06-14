@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import Container from '@/src/app/ui/components/Container';
+import WeatherIcon from '@/src/app/ui/components/WeatherIcon';
+import { getDayOrNight } from '@/src/app/ui/utils/getDayOrNight';
 
 // export const metadata: Metadata = {
 //   title: 'Weather',
@@ -71,44 +73,54 @@ export default function Page() {
           <MdMyLocation />
         </div>
       </div>
-      <Suspense fallback={<CardSkeleton />}>
-        <Card
-          title="Weather"
-          value={JSON.stringify(weatherData)}
-          type="weather"
-        />
-        <main className="mx-auto flex w-full max-w-7xl flex-col gap-9 px-3 pb-10 pt-4">
-          {/* today */}
-          <section>
-            <div>
-              <h2 className="flex items-end gap-1 text-2xl">
-                <p>{format(parseISO(firstData?.dt_txt ?? ''), 'EEEE')}</p>
-                <p>
-                  {' '}
-                  {`(${format(
-                    parseISO(firstData?.dt_txt ?? ''),
-                    'MM.dd.yyyy',
-                  )})`}
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-9 px-3 pb-10 pt-4">
+        {/* today */}
+        <Suspense fallback={<CardSkeleton />}>
+          <Card
+            title={`Today's Weather - 
+            ${new Date(firstData?.dt_txt ?? '').toDateString()}`}
+            type="weather"
+          >
+            <Container className="items-center gap-10 border-none px-6 shadow-none">
+              <div className="flex flex-col items-center justify-center px-4">
+                <span className="text-5xl">
+                  {Math.round(firstData?.main.temp ?? 0)}°
+                </span>
+                <p className="space-x-1 whitespace-nowrap text-xs">
+                  <span>
+                    Feels like {Math.round(firstData?.main.feels_like ?? 0)}°
+                  </span>
                 </p>
-              </h2>
-              <Container className="items-center gap-10 px-6">
-                <div className="flex flex-col px-4">
-                  <span className="text-5xl">{firstData?.main.temp}°</span>
-                  <p className="space-x-1 whitespace-nowrap text-xs">
-                    <span>Feels like {firstData?.main.feels_like}°</span>
-                  </p>
-                  <p className="space-x-1 whitespace-nowrap text-xs">
-                    <span>{firstData?.main.temp_min}</span>
-                    <span>{firstData?.main.temp_max}</span>
-                  </p>
-                </div>
-              </Container>
-            </div>
-          </section>
-          {/* week forecast */}
-          <section></section>
-        </main>
-      </Suspense>
+                <p className="space-x-2 text-xs">
+                  <span>{Math.round(firstData?.main.temp_min ?? 0)}°↓</span>
+                  <span>{Math.round(firstData?.main.temp_max ?? 0)}°↑</span>
+                </p>
+              </div>
+              <div className="flex w-full justify-between gap-10 overflow-x-auto pr-3 sm:gap-16">
+                {data?.list.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center justify-between gap-2 text-xs font-semibold"
+                  >
+                    <WeatherIcon
+                      iconName={getDayOrNight(
+                        item.weather[0].icon,
+                        item.dt_txt,
+                      )}
+                    />
+                    <p className="whitespace-nowrap">
+                      {format(parseISO(item.dt_txt), 'h:mm a')}
+                    </p>
+                    <p>{`${Math.round(item.main.temp)}°`}</p>
+                  </div>
+                ))}
+              </div>
+            </Container>
+          </Card>
+        </Suspense>
+        {/* week forecast */}
+        <section></section>
+      </main>
     </div>
   );
 }

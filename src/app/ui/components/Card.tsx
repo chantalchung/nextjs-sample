@@ -6,12 +6,12 @@ const iconMap = {
 
 export default function Card({
   title,
-  value,
   type,
+  children,
 }: {
   title: string;
-  value: number | string;
   type: 'weather';
+  children: React.ReactNode;
 }) {
   const Icon = iconMap[type];
 
@@ -22,7 +22,7 @@ export default function Card({
         <h3 className="ml-2 text-sm font-medium">{title}</h3>
       </div>
       <p className="truncate rounded-xl bg-white px-4 py-8 text-center text-2xl">
-        {value}
+        {children}
       </p>
     </div>
   );
